@@ -47,7 +47,9 @@ export default function App() {
         data = await response.json();
       } else {
         const text = await response.text();
-        throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+        // Extract the title or first bit of text from the HTML to show the user
+        const errorSnippet = text.match(/<title>(.*?)<\/title>/)?.[1] || text.substring(0, 150).replace(/<[^>]*>/g, '');
+        throw new Error(`Server Error: ${errorSnippet}`);
       }
 
       if (!response.ok) {

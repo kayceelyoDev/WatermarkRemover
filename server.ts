@@ -93,4 +93,10 @@ async function startServer() {
   });
 }
 
+// Export for Vercel
+export default async (req: any, res: any) => {
+  // This is a dummy export to satisfy Vercel's expectation of a default export in some configs
+  // The actual routing is handled by vercel.json rewrites to server.ts
+};
+
 startServer();
