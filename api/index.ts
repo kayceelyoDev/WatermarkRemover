@@ -72,31 +72,31 @@ app.get("/api/proxy-download", async (req, res) => {
   }
 });
 
-async function startServer() {
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
+// Only handle static serving and app.listen if NOT on Vercel
+if (!process.env.VERCEL) {
+  const startServer = async () => {
+    // Vite middleware for development
+    if (process.env.NODE_ENV !== "production") {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    } else {
+      const distPath = path.join(process.cwd(), "dist");
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    }
 
-  // Only listen if we're not in a serverless environment (like Vercel)
-  if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
-  }
+  };
+  
+  startServer();
 }
-
-startServer();
 
 // Export the app for Vercel
 export default app;
