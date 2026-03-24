@@ -48,8 +48,8 @@ export default function App() {
       } else {
         const text = await response.text();
         // Extract the title or first bit of text from the HTML to show the user
-        const errorSnippet = text.match(/<title>(.*?)<\/title>/)?.[1] || text.substring(0, 150).replace(/<[^>]*>/g, '');
-        throw new Error(`Server Error: ${errorSnippet}`);
+        const errorSnippet = text.match(/<title>(.*?)<\/title>/)?.[1] || text.substring(0, 150).replace(/<[^>]*>/g, '').trim();
+        throw new Error(`Server Error (${response.status}): ${errorSnippet || 'Empty response'}`);
       }
 
       if (!response.ok) {
