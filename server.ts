@@ -21,7 +21,12 @@ async function startServer() {
 
     try {
       // Using TikWM API for reliable TikTok video extraction
-      const response = await axios.get(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
+      const response = await axios.get(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        },
+        timeout: 10000 // 10s timeout
+      });
       
       if (response.data.code !== 0) {
         return res.status(400).json({ error: response.data.msg || "Failed to fetch video data" });

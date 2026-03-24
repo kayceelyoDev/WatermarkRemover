@@ -30,36 +30,54 @@ export default function App() {
     setVideoData(null);
 
     try {
-      const response = await fetch('/api/download', {
+      // Ensure we use the full origin for the fetch call to avoid "pattern mismatch" errors
+      const apiUrl = new URL('/api/download', window.location.origin).href;
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: url.trim() }),
       });
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch video');
+        throw new Error(data.error || `Server error: ${response.status}`);
       }
 
       setVideoData(data);
     } catch (err: any) {
-      setError(err.message);
+      console.error("Download error:", err);
+      setError(err.name === 'TypeError' ? 'Network error or invalid URL pattern. Please check your connection.' : err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const triggerDownload = (videoUrl: string, filename: string) => {
-    const proxyUrl = `/api/proxy-download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
-    const link = document.createElement('a');
-    link.href = proxyUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const origin = window.location.origin;
+      const proxyUrl = `${origin}/api/proxy-download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
+      const link = document.createElement('a');
+      link.href = proxyUrl;
+      link.download = filename;
+      link.target = "_blank"; // Fallback for some browsers
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Trigger download error:", err);
+      window.open(videoUrl, '_blank'); // Ultimate fallback
+    }
   };
 
   return (
