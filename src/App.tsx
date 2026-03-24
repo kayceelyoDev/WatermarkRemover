@@ -248,6 +248,7 @@ export default function App() {
         {/* Footer */}
         <footer className="mt-24 text-center text-gray-600 text-sm">
           <p>© 2026 TikTok Saver. Built for personal use only.</p>
+          <p className="mt-1 opacity-50">Environment: {window.location.hostname.includes('vercel') ? 'Vercel' : 'Local'}</p>
           <p className="mt-2">Please respect creators' rights and copyright laws.</p>
         </footer>
       </main>

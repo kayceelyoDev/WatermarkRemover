@@ -2,7 +2,6 @@ import express from "express";
 import axios from "axios";
 import cors from "cors";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 
 const app = express();
 const PORT = 3000;
@@ -72,11 +71,18 @@ app.get("/api/proxy-download", async (req, res) => {
   }
 });
 
+// Health check route
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", environment: process.env.VERCEL ? "vercel" : "local" });
+});
+
 // Only handle static serving and app.listen if NOT on Vercel
 if (!process.env.VERCEL) {
   const startServer = async () => {
     // Vite middleware for development
     if (process.env.NODE_ENV !== "production") {
+      // Dynamic import to avoid Vercel boot errors
+      const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
